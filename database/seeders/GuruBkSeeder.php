@@ -22,6 +22,11 @@ class GuruBkSeeder extends Seeder
                 'email'    => 'siti.guru@educare.com',
                 'nip'      => 'BK-002',
             ],
+            [
+                'name'     => 'Guru BK EduCare, S.Psi',
+                'email'    => 'gurubk@educare.com',
+                'nip'      => 'BK-003',
+            ],
         ];
 
         foreach ($guruList as $data) {

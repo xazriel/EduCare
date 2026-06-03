@@ -100,25 +100,15 @@ class ScoringService
     private function classify(string $psc17, string $sdq, string $sassv): array
     {
         if ($psc17 === 'Negatif' && $sdq === 'Normal' && $sassv === 'Tidak Kecanduan') {
-            return ['Rendah', 'Kondisi psikososialmu tergolong baik! Pertahankan pola penggunaan gadget yang sehat dan tetap aktif bersosialisasi.'];
+            return [
+                'Tidak Berisiko Psikososial',
+                'Kondisi psikososial kamu saat ini dalam keadaan baik. Terus jaga kesehatan mental dan pola aktivitas sehari-hari.'
+            ];
         }
 
-        if (
-            ($psc17 === 'Negatif' && $sassv === 'Kecanduan') ||
-            ($psc17 === 'Positif' && $sdq === 'Normal' && $sassv === 'Tidak Kecanduan') ||
-            ($psc17 === 'Negatif' && $sdq === 'Borderline' && $sassv === 'Kecanduan')
-        ) {
-            return ['Sedang', 'Disarankan mulai membatasi penggunaan gadget, ikut kegiatan positif, dan berkonsultasi dengan guru BK jika diperlukan.'];
-        }
-
-        if ($psc17 === 'Positif' && $sdq === 'Borderline') {
-            return ['Tinggi', 'Segera konsultasikan dengan guru BK sekolah. Kurangi waktu layar dan tingkatkan aktivitas sosial serta fisik.'];
-        }
-
-        if ($psc17 === 'Positif' && $sdq === 'Abnormal' && $sassv === 'Kecanduan') {
-            return ['Sangat Tinggi', 'Sangat disarankan untuk segera berkonsultasi dengan psikolog atau konselor profesional dan lakukan intervensi psikososial intensif.'];
-        }
-
-        return ['Sedang', 'Disarankan konseling awal dengan guru BK dan perhatikan pola penggunaan gadget sehari-hari.'];
+        return [
+            'Berisiko Psikososial',
+            'Terdapat indikasi risiko psikososial berdasarkan hasil assessment. Disarankan untuk berkonsultasi dengan guru BK atau tenaga profesional.'
+        ];
     }
 }

@@ -26,11 +26,18 @@ Route::middleware('auth')->group(function () {
 // Admin Routes
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::resource('guru-bk', \App\Http\Controllers\Admin\AdminGuruBkController::class)->except(['show']);
+    Route::resource('siswa', \App\Http\Controllers\Admin\AdminSiswaController::class)->except(['show']);
+    Route::resource('soal', \App\Http\Controllers\Admin\AdminSoalController::class)->only(['index', 'edit', 'update']);
 });
 
 // Guru BK Routes
 Route::middleware(['auth', 'role:guru_bk'])->prefix('guru-bk')->name('guruBk.')->group(function () {
     Route::get('/dashboard', [GuruBkDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/analisis-bi', [\App\Http\Controllers\GuruBk\GuruBkBiController::class, 'index'])->name('bi');
+    Route::get('/siswa', [\App\Http\Controllers\GuruBk\GuruBkSiswaController::class, 'index'])->name('siswa.index');
+    Route::get('/siswa/{id}', [\App\Http\Controllers\GuruBk\GuruBkSiswaController::class, 'show'])->name('siswa.show');
+    Route::post('/siswa/{id}/rekomendasi', [\App\Http\Controllers\GuruBk\GuruBkSiswaController::class, 'storeRecommendation'])->name('siswa.recommendation');
 });
 
 // Siswa Routes

@@ -94,7 +94,7 @@
             </div>
 
             <h2 class="text-2xl font-bold text-slate-800 mb-1">Selamat Datang 👋</h2>
-            <p class="text-slate-500 text-sm mb-8">Masuk ke akun siswa kamu untuk melanjutkan</p>
+            <p class="text-slate-500 text-sm mb-8">Masuk ke akun kamu untuk melanjutkan</p>
 
             {{-- Status --}}
             @if(session('status'))
@@ -146,14 +146,6 @@
                     </svg>
                     Masuk ke Akun
                 </button>
-
-                {{-- Demo hint --}}
-                <div class="mt-4 bg-slate-50 rounded-xl p-4 border border-slate-100">
-                    <p class="text-xs font-semibold text-slate-500 mb-2">🔑 Akun Demo Siswa:</p>
-                    <div class="space-y-1 text-xs text-slate-500">
-                        <p>Email: <span class="font-mono text-slate-700">andi@siswa.test</span></p>
-                        <p>Password: <span class="font-mono text-slate-700">password</span></p>
-                    </div>
                 </div>
             </form>
         </div>

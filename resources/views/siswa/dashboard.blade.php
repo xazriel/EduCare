@@ -18,10 +18,9 @@
             @if($lastResponse)
                 <span class="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/20">
                     <span class="w-1.5 h-1.5 rounded-full
-                        @if($lastResponse->riskClassification?->overall_risk === 'Rendah') bg-emerald-400
-                        @elseif($lastResponse->riskClassification?->overall_risk === 'Sedang') bg-amber-400
+                        @if($lastResponse->riskClassification?->overall_risk === 'Tidak Berisiko Psikososial') bg-emerald-400
                         @else bg-red-400 @endif"></span>
-                    Risiko {{ $lastResponse->riskClassification?->overall_risk ?? '-' }}
+                    {{ $lastResponse->riskClassification?->overall_risk ?? '-' }}
                 </span>
                 <span class="text-white/60 text-xs">Assessment terakhir: {{ $lastResponse->completed_at?->diffForHumans() }}</span>
             @else
@@ -98,27 +97,21 @@
                 @php
                     $risk = $lastResponse->riskClassification->overall_risk;
                     $riskConfig = [
-                        'Rendah'       => ['bg' => 'bg-emerald-50', 'border' => 'border-emerald-200', 'text' => 'text-emerald-700', 'badge' => 'bg-emerald-500', 'icon' => '✅', 'bar' => 'bg-emerald-500', 'w' => 'w-1/4'],
-                        'Sedang'       => ['bg' => 'bg-amber-50',   'border' => 'border-amber-200',   'text' => 'text-amber-700',   'badge' => 'bg-amber-500',   'icon' => '⚠️', 'bar' => 'bg-amber-500',   'w' => 'w-2/4'],
-                        'Tinggi'       => ['bg' => 'bg-red-50',     'border' => 'border-red-200',     'text' => 'text-red-700',     'badge' => 'bg-red-500',     'icon' => '🔴', 'bar' => 'bg-red-500',     'w' => 'w-3/4'],
-                        'Sangat Tinggi'=> ['bg' => 'bg-red-100',    'border' => 'border-red-300',     'text' => 'text-red-800',     'badge' => 'bg-red-700',     'icon' => '🚨', 'bar' => 'bg-red-700',     'w' => 'w-full'],
+                        'Tidak Berisiko Psikososial' => ['bg' => 'bg-emerald-50', 'border' => 'border-emerald-200', 'text' => 'text-emerald-700', 'badge' => 'bg-emerald-500', 'icon' => '✅'],
+                        'Berisiko Psikososial'       => ['bg' => 'bg-red-50',     'border' => 'border-red-200',     'text' => 'text-red-700',     'badge' => 'bg-red-500',     'icon' => '🚨'],
                     ];
-                    $cfg = $riskConfig[$risk] ?? $riskConfig['Sedang'];
+                    $cfg = $riskConfig[$risk] ?? $riskConfig['Berisiko Psikososial'];
                 @endphp
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Level Risiko Terakhir</p>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Status Risiko Terakhir</p>
                     <div class="{{ $cfg['bg'] }} {{ $cfg['border'] }} border rounded-xl p-4">
                         <div class="flex items-center gap-2 mb-2">
                             <span class="text-xl">{{ $cfg['icon'] }}</span>
-                            <span class="{{ $cfg['text'] }} font-bold text-lg">{{ $risk }}</span>
+                            <span class="{{ $cfg['text'] }} font-bold text-sm sm:text-base leading-snug">{{ $risk }}</span>
                         </div>
-                        <p class="{{ $cfg['text'] }} text-xs leading-relaxed opacity-80">
+                        <p class="{{ $cfg['text'] }} text-xs leading-relaxed opacity-85">
                             {{ $lastResponse->riskClassification->recommendation }}
                         </p>
-                        {{-- Risk bar --}}
-                        <div class="mt-3 bg-white/50 rounded-full h-2">
-                            <div class="{{ $cfg['bar'] }} {{ $cfg['w'] }} h-2 rounded-full transition-all duration-1000"></div>
-                        </div>
                     </div>
                 </div>
             @else
@@ -197,7 +190,7 @@
                         @foreach($history->reverse() as $item)
                             @php
                                 $r = $item->riskClassification?->overall_risk ?? '-';
-                                $badge = ['Rendah'=>'bg-emerald-100 text-emerald-700','Sedang'=>'bg-amber-100 text-amber-700','Tinggi'=>'bg-red-100 text-red-700','Sangat Tinggi'=>'bg-red-200 text-red-800'][$r] ?? 'bg-slate-100 text-slate-600';
+                                $badge = $r === 'Tidak Berisiko Psikososial' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700';
                             @endphp
                             <a href="{{ route('siswa.riwayat.show', $item->id) }}"
                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition group">

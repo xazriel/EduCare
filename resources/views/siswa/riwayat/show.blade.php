@@ -1,17 +1,14 @@
 <x-siswa-layout>
     <x-slot name="pageTitle">Detail Riwayat</x-slot>
     <x-slot name="pageSubtitle">{{ $response->completed_at?->format('d F Y, H:i') }} WIB</x-slot>
-
     @php
         $rc = $response->riskClassification;
         $risk = $rc?->overall_risk ?? '-';
         $riskMap = [
-            'Rendah'        => ['gradient'=>'from-emerald-500 to-teal-500',  'bg'=>'bg-emerald-50', 'border'=>'border-emerald-200', 'text'=>'text-emerald-700', 'emoji'=>'✅'],
-            'Sedang'        => ['gradient'=>'from-amber-500 to-orange-500',  'bg'=>'bg-amber-50',   'border'=>'border-amber-200',   'text'=>'text-amber-700',   'emoji'=>'⚠️'],
-            'Tinggi'        => ['gradient'=>'from-red-500 to-rose-600',      'bg'=>'bg-red-50',     'border'=>'border-red-200',     'text'=>'text-red-700',     'emoji'=>'🔴'],
-            'Sangat Tinggi' => ['gradient'=>'from-red-700 to-rose-800',      'bg'=>'bg-red-100',    'border'=>'border-red-300',     'text'=>'text-red-800',     'emoji'=>'🚨'],
+            'Tidak Berisiko Psikososial' => ['gradient'=>'from-emerald-500 to-teal-500',  'bg'=>'bg-emerald-50', 'border'=>'border-emerald-200', 'text'=>'text-emerald-700', 'emoji'=>'✅'],
+            'Berisiko Psikososial'       => ['gradient'=>'from-red-500 to-rose-600',      'bg'=>'bg-red-50',     'border'=>'border-red-200',     'text'=>'text-red-700',     'emoji'=>'🚨'],
         ];
-        $cfg = $riskMap[$risk] ?? $riskMap['Sedang'];
+        $cfg = $riskMap[$risk] ?? $riskMap['Berisiko Psikososial'];
     @endphp
 
     <div class="max-w-2xl mx-auto space-y-5">

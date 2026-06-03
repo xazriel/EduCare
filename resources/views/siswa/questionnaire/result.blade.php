@@ -4,38 +4,26 @@
 
     @php
         $rc = $response->riskClassification;
-        $risk = $rc?->overall_risk ?? 'Sedang';
+        $risk = $rc?->overall_risk ?? 'Berisiko Psikososial';
         $riskMap = [
-            'Rendah'        => ['gradient'=>'from-emerald-500 to-teal-500',   'bg'=>'bg-emerald-50',  'border'=>'border-emerald-200', 'text'=>'text-emerald-700', 'icon'=>'✅', 'emoji'=>'🌟'],
-            'Sedang'        => ['gradient'=>'from-amber-500 to-orange-500',   'bg'=>'bg-amber-50',    'border'=>'border-amber-200',   'text'=>'text-amber-700',   'icon'=>'⚠️', 'emoji'=>'💪'],
-            'Tinggi'        => ['gradient'=>'from-red-500 to-rose-600',       'bg'=>'bg-red-50',      'border'=>'border-red-200',     'text'=>'text-red-700',     'icon'=>'🔴', 'emoji'=>'🆘'],
-            'Sangat Tinggi' => ['gradient'=>'from-red-700 to-rose-800',       'bg'=>'bg-red-100',     'border'=>'border-red-300',     'text'=>'text-red-800',     'icon'=>'🚨', 'emoji'=>'🚨'],
+            'Tidak Berisiko Psikososial' => ['gradient'=>'from-emerald-500 to-teal-500',   'bg'=>'bg-emerald-50',  'border'=>'border-emerald-200', 'text'=>'text-emerald-700', 'icon'=>'✅', 'emoji'=>'🌟'],
+            'Berisiko Psikososial'       => ['gradient'=>'from-red-500 to-rose-600',       'bg'=>'bg-red-50',      'border'=>'border-red-200',     'text'=>'text-red-700',     'icon'=>'🚨', 'emoji'=>'🚨'],
         ];
-        $rc_cfg = $riskMap[$risk] ?? $riskMap['Sedang'];
+        $rc_cfg = $riskMap[$risk] ?? $riskMap['Berisiko Psikososial'];
 
         $rekomendasi = [
-            'Rendah' => [
-                ['icon'=>'🎯','title'=>'Pertahankan Pola Baik','desc'=>'Kamu sudah memiliki kebiasaan penggunaan gadget yang sehat. Teruskan!'],
-                ['icon'=>'📚','title'=>'Aktif Belajar','desc'=>'Manfaatkan waktu layar untuk hal produktif seperti belajar online.'],
-                ['icon'=>'🏃','title'=>'Tetap Aktif Fisik','desc'=>'Olahraga rutin minimal 30 menit sehari untuk jaga kesehatan mental.'],
+            'Tidak Berisiko Psikososial' => [
+                ['icon'=>'🎯','title'=>'Pertahankan Pola Baik','desc'=>'Kamu sudah memiliki kebiasaan hidup sehat dan penggunaan gadget yang seimbang. Teruskan!'],
+                ['icon'=>'📚','title'=>'Aktif Belajar','desc'=>'Manfaatkan waktu luang untuk hal-hal produktif yang mendukung perkembanganmu.'],
+                ['icon'=>'🏃','title'=>'Tetap Aktif Fisik','desc'=>'Olahraga rutin minimal 30 menit sehari untuk menjaga kesehatan mental dan fisik.'],
             ],
-            'Sedang' => [
-                ['icon'=>'⏱️','title'=>'Batasi Screen Time','desc'=>'Kurangi penggunaan gadget non-produktif menjadi max 2 jam/hari.'],
-                ['icon'=>'👥','title'=>'Perbanyak Interaksi Sosial','desc'=>'Luangkan waktu untuk bersosialisasi langsung dengan teman dan keluarga.'],
-                ['icon'=>'🤝','title'=>'Konsultasi Guru BK','desc'=>'Bicarakan perasaan dan kekhawatiranmu dengan guru BK untuk panduan lebih lanjut.'],
-            ],
-            'Tinggi' => [
-                ['icon'=>'🏫','title'=>'Segera ke Guru BK','desc'=>'Jadwalkan konseling dengan guru BK sesegera mungkin.'],
-                ['icon'=>'📵','title'=>'Digital Detox','desc'=>'Coba satu hari penuh tanpa media sosial dan evaluasi perubahannya.'],
-                ['icon'=>'💬','title'=>'Cerita ke Orang Tua','desc'=>'Berbagi dengan orang tua tentang kondisi kamu agar dapat dukungan penuh.'],
-            ],
-            'Sangat Tinggi' => [
-                ['icon'=>'🏥','title'=>'Rujuk Profesional','desc'=>'Segera konsultasikan ke psikolog atau konselor profesional.'],
-                ['icon'=>'👨‍👩‍👧','title'=>'Libatkan Keluarga','desc'=>'Keluarga perlu mengetahui kondisi ini untuk memberi dukungan optimal.'],
-                ['icon'=>'🚫','title'=>'Hentikan Penggunaan Berlebihan','desc'=>'Batasi penggunaan smartphone dengan bantuan aplikasi kontrol orang tua.'],
+            'Berisiko Psikososial' => [
+                ['icon'=>'🏫','title'=>'Konsultasi Guru BK','desc'=>'Luangkan waktu untuk berkonsultasi dengan guru BK sekolah untuk konseling awal.'],
+                ['icon'=>'👥','title'=>'Dukungan Teman & Keluarga','desc'=>'Ceritakan kondisi atau kecemasanmu kepada orang terdekat untuk meringankan bebanmu.'],
+                ['icon'=>'🏥','title'=>'Bantuan Profesional','desc'=>'Jika dirasa perlu, mintalah rujukan untuk berkonsultasi dengan psikolog atau konselor profesional.'],
             ],
         ];
-        $tips = $rekomendasi[$risk] ?? $rekomendasi['Sedang'];
+        $tips = $rekomendasi[$risk] ?? $rekomendasi['Berisiko Psikososial'];
     @endphp
 
     <div class="max-w-3xl mx-auto space-y-6">

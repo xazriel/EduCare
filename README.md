@@ -152,3 +152,8 @@ Gunakan kredensial berikut untuk menguji sistem setelah melakukan seeding:
 | **Siswa** | `siswa@educare.com` | `password` |
 
 ---
+<<<<<<< HEAD
+=======
+
+💡 *EduCare dikembangkan untuk mewujudkan lingkungan sekolah yang sehat secara mental dan gawai untuk masa depan yang lebih cerah.*
+>>>>>>> 2052747 (fix UI)

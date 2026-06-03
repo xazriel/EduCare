@@ -4,10 +4,8 @@
 
     @php
         $riskBadge = [
-            'Rendah'        => 'bg-emerald-100 text-emerald-700 border-emerald-200',
-            'Sedang'        => 'bg-amber-100 text-amber-700 border-amber-200',
-            'Tinggi'        => 'bg-red-100 text-red-700 border-red-200',
-            'Sangat Tinggi' => 'bg-red-200 text-red-800 border-red-300',
+            'Tidak Berisiko Psikososial' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            'Berisiko Psikososial'       => 'bg-red-100 text-red-700 border-red-200',
         ];
     @endphp
 

@@ -33,31 +33,30 @@ class QuestionnaireController extends Controller
     }
 
     // ============================================================
-    // SDQ – One question per screen
+    // SDQ – All questions on one page
     // ============================================================
     public function sdq(Request $request)
     {
         $questions = Question::where('type', 'sdq')->orderBy('number')->get();
-        $step      = (int) $request->query('step', 1);
-        $step      = max(1, min($step, $questions->count()));
-        $question  = $questions->firstWhere('number', $step);
 
-        // Ambil jawaban tersimpan di session
-        $saved = session('sdq_answers', []);
+        // Selalu buat atau ambil draf response baru jika belum ada
+        $draft = QuestionnaireResponse::firstOrCreate(
+            ['user_id' => Auth::id(), 'status' => 'draft'],
+        );
+
+        $saved = SdqAnswer::where('response_id', $draft->id)
+            ->pluck('answer_value', 'question_number')
+            ->toArray();
 
         return view('siswa.questionnaire.wizard', [
-            'instrument' => 'SDQ',
+            'instrument'     => 'SDQ',
             'instrument_key' => 'sdq',
-            'questions'  => $questions,
-            'question'   => $question,
-            'step'       => $step,
-            'total'      => $questions->count(),
-            'saved'      => $saved,
-            'prev_route' => $step > 1
-                ? route('siswa.questionnaire.sdq', ['step' => $step - 1])
-                : route('siswa.questionnaire.index'),
-            'next_step'  => $step < $questions->count() ? $step + 1 : null,
-            'options'    => [
+            'questions'      => $questions,
+            'step'           => 1,
+            'total'          => 3,
+            'saved'          => $saved,
+            'prev_route'     => route('siswa.questionnaire.index'),
+            'options'        => [
                 0 => 'Tidak Benar',
                 1 => 'Agak Benar',
                 2 => 'Benar',
@@ -67,69 +66,63 @@ class QuestionnaireController extends Controller
 
     public function storeSdqStep(Request $request)
     {
-        $step   = (int) $request->input('step');
-        $answer = $request->input('answer');
-
-        if ($answer === null || $answer === '') {
-            return back()->withErrors(['answer' => 'Harap pilih salah satu jawaban.'])->withInput();
-        }
-
-        $saved          = session('sdq_answers', []);
-        $saved[$step]   = (int) $answer;
-        session(['sdq_answers' => $saved]);
-
-        $total = Question::where('type', 'sdq')->count();
-
-        if ($step < $total) {
-            return redirect()->route('siswa.questionnaire.sdq', ['step' => $step + 1]);
-        }
-
-        // Semua soal SDQ selesai → simpan ke DB
-        return $this->commitSdq($saved);
-    }
-
-    private function commitSdq(array $answers)
-    {
-        $request = QuestionnaireResponse::firstOrCreate(
+        $response = QuestionnaireResponse::firstOrCreate(
             ['user_id' => Auth::id(), 'status' => 'draft'],
         );
 
-        SdqAnswer::where('response_id', $request->id)->delete();
+        $answers = $request->input('answers', []);
+
+        // Simpan jawaban yang diisi saat ini (boleh kosong/parsial)
+        SdqAnswer::where('response_id', $response->id)->delete();
         foreach ($answers as $num => $val) {
-            SdqAnswer::create([
-                'response_id'     => $request->id,
-                'question_number' => $num,
-                'answer_value'    => $val,
-            ]);
+            if ($val !== null && $val !== '') {
+                SdqAnswer::create([
+                    'response_id'     => $response->id,
+                    'question_number' => $num,
+                    'answer_value'    => (int) $val,
+                ]);
+            }
         }
 
-        session()->forget('sdq_answers');
-        return redirect()->route('siswa.questionnaire.psc17', ['step' => 1]);
+        // Cek target redirect dari tab atau tombol kembali
+        $nextTab = $request->input('next_tab');
+        if ($nextTab === 'psc17') {
+            return redirect()->route('siswa.questionnaire.psc17');
+        } elseif ($nextTab === 'sassv') {
+            return redirect()->route('siswa.questionnaire.sassv');
+        } elseif ($nextTab === 'sdq') {
+            return redirect()->route('siswa.questionnaire.sdq');
+        } elseif ($nextTab === 'back') {
+            return redirect()->route('siswa.questionnaire.index');
+        }
+
+        // Default: lanjut ke instrumen berikutnya (PSC-17)
+        return redirect()->route('siswa.questionnaire.psc17');
     }
 
     // ============================================================
-    // PSC-17 – One question per screen
+    // PSC-17 – All questions on one page
     // ============================================================
     public function psc17(Request $request)
     {
+        $draft = QuestionnaireResponse::firstOrCreate(
+            ['user_id' => Auth::id(), 'status' => 'draft'],
+        );
+
         $questions = Question::where('type', 'psc17')->orderBy('number')->get();
-        $step      = (int) $request->query('step', 1);
-        $step      = max(1, min($step, $questions->count()));
-        $question  = $questions->firstWhere('number', $step);
-        $saved     = session('psc17_answers', []);
+
+        $saved = Psc17Answer::where('response_id', $draft->id)
+            ->pluck('answer_value', 'question_number')
+            ->toArray();
 
         return view('siswa.questionnaire.wizard', [
             'instrument'     => 'PSC-17',
             'instrument_key' => 'psc17',
             'questions'      => $questions,
-            'question'       => $question,
-            'step'           => $step,
-            'total'          => $questions->count(),
+            'step'           => 2,
+            'total'          => 3,
             'saved'          => $saved,
-            'prev_route'     => $step > 1
-                ? route('siswa.questionnaire.psc17', ['step' => $step - 1])
-                : route('siswa.questionnaire.sdq', ['step' => 25]),
-            'next_step'      => $step < $questions->count() ? $step + 1 : null,
+            'prev_route'     => route('siswa.questionnaire.sdq'),
             'options'        => [
                 0 => 'Tidak Pernah',
                 1 => 'Kadang-kadang',
@@ -140,67 +133,63 @@ class QuestionnaireController extends Controller
 
     public function storePsc17Step(Request $request)
     {
-        $step   = (int) $request->input('step');
-        $answer = $request->input('answer');
+        $response = QuestionnaireResponse::firstOrCreate(
+            ['user_id' => Auth::id(), 'status' => 'draft'],
+        );
 
-        if ($answer === null || $answer === '') {
-            return back()->withErrors(['answer' => 'Harap pilih salah satu jawaban.'])->withInput();
-        }
+        $answers = $request->input('answers', []);
 
-        $saved        = session('psc17_answers', []);
-        $saved[$step] = (int) $answer;
-        session(['psc17_answers' => $saved]);
-
-        $total = Question::where('type', 'psc17')->count();
-
-        if ($step < $total) {
-            return redirect()->route('siswa.questionnaire.psc17', ['step' => $step + 1]);
-        }
-
-        return $this->commitPsc17($saved);
-    }
-
-    private function commitPsc17(array $answers)
-    {
-        $response = QuestionnaireResponse::where('user_id', Auth::id())
-            ->where('status', 'draft')->latest()->firstOrFail();
-
+        // Simpan jawaban yang diisi saat ini (boleh kosong/parsial)
         Psc17Answer::where('response_id', $response->id)->delete();
         foreach ($answers as $num => $val) {
-            Psc17Answer::create([
-                'response_id'     => $response->id,
-                'question_number' => $num,
-                'answer_value'    => $val,
-            ]);
+            if ($val !== null && $val !== '') {
+                Psc17Answer::create([
+                    'response_id'     => $response->id,
+                    'question_number' => $num,
+                    'answer_value'    => (int) $val,
+                ]);
+            }
         }
 
-        session()->forget('psc17_answers');
-        return redirect()->route('siswa.questionnaire.sassv', ['step' => 1]);
+        // Cek target redirect dari tab atau tombol kembali
+        $nextTab = $request->input('next_tab');
+        if ($nextTab === 'sdq') {
+            return redirect()->route('siswa.questionnaire.sdq');
+        } elseif ($nextTab === 'sassv') {
+            return redirect()->route('siswa.questionnaire.sassv');
+        } elseif ($nextTab === 'psc17') {
+            return redirect()->route('siswa.questionnaire.psc17');
+        } elseif ($nextTab === 'back') {
+            return redirect()->route('siswa.questionnaire.sdq');
+        }
+
+        // Default: lanjut ke instrumen berikutnya (SAS-SV)
+        return redirect()->route('siswa.questionnaire.sassv');
     }
 
     // ============================================================
-    // SAS-SV – One question per screen
+    // SAS-SV – All questions on one page
     // ============================================================
     public function sassv(Request $request)
     {
+        $draft = QuestionnaireResponse::firstOrCreate(
+            ['user_id' => Auth::id(), 'status' => 'draft'],
+        );
+
         $questions = Question::where('type', 'sassv')->orderBy('number')->get();
-        $step      = (int) $request->query('step', 1);
-        $step      = max(1, min($step, $questions->count()));
-        $question  = $questions->firstWhere('number', $step);
-        $saved     = session('sassv_answers', []);
+
+        $saved = SassvAnswer::where('response_id', $draft->id)
+            ->pluck('answer_value', 'question_number')
+            ->toArray();
 
         return view('siswa.questionnaire.wizard', [
             'instrument'     => 'SAS-SV',
             'instrument_key' => 'sassv',
             'questions'      => $questions,
-            'question'       => $question,
-            'step'           => $step,
-            'total'          => $questions->count(),
+            'step'           => 3,
+            'total'          => 3,
             'saved'          => $saved,
-            'prev_route'     => $step > 1
-                ? route('siswa.questionnaire.sassv', ['step' => $step - 1])
-                : route('siswa.questionnaire.psc17', ['step' => 17]),
-            'next_step'      => $step < $questions->count() ? $step + 1 : null,
+            'prev_route'     => route('siswa.questionnaire.psc17'),
             'options'        => [
                 1 => 'Sangat Tidak Setuju',
                 2 => 'Tidak Setuju',
@@ -214,43 +203,73 @@ class QuestionnaireController extends Controller
 
     public function storeSassvStep(Request $request)
     {
-        $step   = (int) $request->input('step');
-        $answer = $request->input('answer');
+        $response = QuestionnaireResponse::firstOrCreate(
+            ['user_id' => Auth::id(), 'status' => 'draft'],
+        );
 
-        if ($answer === null || $answer === '') {
-            return back()->withErrors(['answer' => 'Harap pilih salah satu jawaban.'])->withInput();
-        }
+        $answers = $request->input('answers', []);
 
-        $saved        = session('sassv_answers', []);
-        $saved[$step] = (int) $answer;
-        session(['sassv_answers' => $saved]);
-
-        $total = Question::where('type', 'sassv')->count();
-
-        if ($step < $total) {
-            return redirect()->route('siswa.questionnaire.sassv', ['step' => $step + 1]);
-        }
-
-        return $this->commitSassv($saved);
-    }
-
-    private function commitSassv(array $answers)
-    {
-        $response = QuestionnaireResponse::where('user_id', Auth::id())
-            ->where('status', 'draft')->latest()->firstOrFail();
-
+        // Simpan jawaban yang diisi saat ini (boleh kosong/parsial)
         SassvAnswer::where('response_id', $response->id)->delete();
         foreach ($answers as $num => $val) {
-            SassvAnswer::create([
-                'response_id'     => $response->id,
-                'question_number' => $num,
-                'answer_value'    => $val,
-            ]);
+            if ($val !== null && $val !== '') {
+                SassvAnswer::create([
+                    'response_id'     => $response->id,
+                    'question_number' => $num,
+                    'answer_value'    => (int) $val,
+                ]);
+            }
         }
 
-        session()->forget('sassv_answers');
+        // Cek target redirect dari tab atau tombol kembali
+        $nextTab = $request->input('next_tab');
+        if ($nextTab === 'sdq') {
+            return redirect()->route('siswa.questionnaire.sdq');
+        } elseif ($nextTab === 'psc17') {
+            return redirect()->route('siswa.questionnaire.psc17');
+        } elseif ($nextTab === 'sassv') {
+            return redirect()->route('siswa.questionnaire.sassv');
+        } elseif ($nextTab === 'back') {
+            return redirect()->route('siswa.questionnaire.psc17');
+        }
 
-        // Hitung skor & klasifikasi
+        // Jika menekan tombol selesai kuesioner, validasi seluruh 52 pertanyaan dari ketiga instrumen
+        $sdqQuestions = Question::where('type', 'sdq')->orderBy('number')->get();
+        $pscQuestions = Question::where('type', 'psc17')->orderBy('number')->get();
+        $sasQuestions = Question::where('type', 'sassv')->orderBy('number')->get();
+
+        $sdqAnswers = SdqAnswer::where('response_id', $response->id)->pluck('answer_value', 'question_number')->toArray();
+        $pscAnswers = Psc17Answer::where('response_id', $response->id)->pluck('answer_value', 'question_number')->toArray();
+        $sasAnswers = SassvAnswer::where('response_id', $response->id)->pluck('answer_value', 'question_number')->toArray();
+
+        // 1. Cek kelengkapan SDQ
+        foreach ($sdqQuestions as $q) {
+            if (!isset($sdqAnswers[$q->number])) {
+                return redirect()->route('siswa.questionnaire.sdq')
+                    ->withErrors(['answers' => "Mohon selesaikan pengisian. Pertanyaan nomor {$q->number} pada instrumen SDQ belum dijawab."])
+                    ->withInput();
+            }
+        }
+
+        // 2. Cek kelengkapan PSC-17
+        foreach ($pscQuestions as $q) {
+            if (!isset($pscAnswers[$q->number])) {
+                return redirect()->route('siswa.questionnaire.psc17')
+                    ->withErrors(['answers' => "Mohon selesaikan pengisian. Pertanyaan nomor {$q->number} pada instrumen PSC-17 belum dijawab."])
+                    ->withInput();
+            }
+        }
+
+        // 3. Cek kelengkapan SAS-SV
+        foreach ($sasQuestions as $q) {
+            if (!isset($sasAnswers[$q->number])) {
+                return redirect()->route('siswa.questionnaire.sassv')
+                    ->withErrors(['answers' => "Mohon selesaikan pengisian. Pertanyaan nomor {$q->number} pada instrumen SAS-SV belum dijawab."])
+                    ->withInput();
+            }
+        }
+
+        // Hitung skor & klasifikasi final jika semuanya lengkap
         $this->scoring->calculate($response);
 
         return redirect()->route('siswa.questionnaire.result', $response->id);

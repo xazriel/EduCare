@@ -16,18 +16,27 @@ class SiswaSeeder extends Seeder
 {
     public function run(): void
     {
-        // Buat kelas terlebih dahulu
-        $kelas1 = Classes::firstOrCreate(['name' => 'X IPA 1'],  ['grade' => 10, 'academic_year' => '2024/2025']);
-        $kelas2 = Classes::firstOrCreate(['name' => 'X IPS 2'],  ['grade' => 10, 'academic_year' => '2024/2025']);
-        $kelas3 = Classes::firstOrCreate(['name' => 'XI IPA 3'], ['grade' => 11, 'academic_year' => '2024/2025']);
+        // Buat kelas 7-1 s.d 9-9 (total 27 kelas)
+        $classesMap = [];
+        for ($grade = 7; $grade <= 9; $grade++) {
+            for ($sub = 1; $sub <= 9; $sub++) {
+                $name = "{$grade}-{$sub}";
+                $class = Classes::firstOrCreate(
+                    ['name' => $name],
+                    ['grade' => $grade, 'academic_year' => '2024/2025']
+                );
+                $classesMap[$name] = $class->id;
+            }
+        }
 
-        // Data siswa dummy
+        // Data siswa dummy dengan kelas baru
         $siswaList = [
-            ['name' => 'Andi Pratama',   'email' => 'andi@siswa.test',   'nis' => '2024001', 'gender' => 'L', 'class_id' => $kelas1->id],
-            ['name' => 'Sari Dewi',      'email' => 'sari@siswa.test',   'nis' => '2024002', 'gender' => 'P', 'class_id' => $kelas1->id],
-            ['name' => 'Budi Santoso',   'email' => 'budi@siswa.test',   'nis' => '2024003', 'gender' => 'L', 'class_id' => $kelas2->id],
-            ['name' => 'Rini Wulandari', 'email' => 'rini@siswa.test',   'nis' => '2024004', 'gender' => 'P', 'class_id' => $kelas2->id],
-            ['name' => 'Dika Saputra',   'email' => 'dika@siswa.test',   'nis' => '2024005', 'gender' => 'L', 'class_id' => $kelas3->id],
+            ['name' => 'Andi Pratama',   'email' => 'andi@siswa.test',   'nis' => '2024001', 'gender' => 'L', 'class_id' => $classesMap['7-1']],
+            ['name' => 'Sari Dewi',      'email' => 'sari@siswa.test',   'nis' => '2024002', 'gender' => 'P', 'class_id' => $classesMap['7-2']],
+            ['name' => 'Budi Santoso',   'email' => 'budi@siswa.test',   'nis' => '2024003', 'gender' => 'L', 'class_id' => $classesMap['8-1']],
+            ['name' => 'Rini Wulandari', 'email' => 'rini@siswa.test',   'nis' => '2024004', 'gender' => 'P', 'class_id' => $classesMap['8-2']],
+            ['name' => 'Dika Saputra',   'email' => 'dika@siswa.test',   'nis' => '2024005', 'gender' => 'L', 'class_id' => $classesMap['9-1']],
+            ['name' => 'Siswa EduCare',  'email' => 'siswa@educare.com', 'nis' => '2024999', 'gender' => 'P', 'class_id' => $classesMap['7-1']],
         ];
 
         foreach ($siswaList as $data) {
@@ -57,7 +66,7 @@ class SiswaSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'nis'      => '2024006',
                 'gender'   => 'L',
-                'class_id' => $kelas3->id,
+                'class_id' => $classesMap['9-9'],
             ]
         );
         $siswaHigh->assignRole('siswa');
@@ -162,10 +171,10 @@ class SiswaSeeder extends Seeder
     private function getClassification(string $level): array
     {
         return match ($level) {
-            'low'    => ['Normal',    'Negatif', 'Tidak Kecanduan', 'Rendah',       'Kondisi psikososialmu tergolong baik! Pertahankan pola penggunaan gadget yang sehat.'],
-            'medium' => ['Borderline','Negatif', 'Kecanduan',       'Sedang',       'Disarankan membatasi penggunaan gadget dan berkonsultasi dengan guru BK.'],
-            'high'   => ['Abnormal',  'Positif', 'Kecanduan',       'Sangat Tinggi','Segera konsultasikan dengan psikolog atau konselor profesional.'],
-            default  => ['Normal',    'Negatif', 'Tidak Kecanduan', 'Rendah',       'Kondisi psikososialmu tergolong baik!'],
+            'low'    => ['Normal',    'Negatif', 'Tidak Kecanduan', 'Tidak Berisiko Psikososial', 'Kondisi psikososial kamu saat ini dalam keadaan baik. Terus jaga kesehatan mental dan pola aktivitas sehari-hari.'],
+            'medium' => ['Borderline','Negatif', 'Kecanduan',       'Berisiko Psikososial',       'Terdapat indikasi risiko psikososial berdasarkan hasil assessment. Disarankan untuk berkonsultasi dengan guru BK atau tenaga profesional.'],
+            'high'   => ['Abnormal',  'Positif', 'Kecanduan',       'Berisiko Psikososial',       'Terdapat indikasi risiko psikososial berdasarkan hasil assessment. Disarankan untuk berkonsultasi dengan guru BK atau tenaga profesional.'],
+            default  => ['Normal',    'Negatif', 'Tidak Kecanduan', 'Tidak Berisiko Psikososial', 'Kondisi psikososial kamu saat ini dalam keadaan baik. Terus jaga kesehatan mental dan pola aktivitas sehari-hari.'],
         };
     }
 }
